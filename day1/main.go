@@ -1,18 +1,34 @@
 package main
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 )
 
-type calibaration struct {
+// Define a map for spelled-out numbers
+var spelledNumbers = map[string]int{
+	"zero":  0,
+	"one":   1,
+	"two":   2,
+	"three": 3,
+	"four":  4,
+	"five":  5,
+	"six":   6,
+	"seven": 7,
+	"eight": 8,
+	"nine":  9,
+}
+
+type calibration struct {
 	firstNumber  int
 	secondNumber int
 }
 
-func (c calibaration) getNumber() int {
+func (c calibration) getNumber() int {
 	var num = 0
 	num += c.firstNumber * 10
 	num += c.secondNumber
@@ -20,29 +36,39 @@ func (c calibaration) getNumber() int {
 	return num
 }
 
-func readFile(filename string) (string, error) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		fmt.Println("File reading error", err)
-		return "", err
+func findNumberString(fragment string) (int, error) {
+	for key, val := range spelledNumbers {
+		if strings.HasPrefix(fragment, key) {
+			return val, nil
+		}
 	}
-	return string(data), nil
+
+	return 0, errors.New("number not found")
 }
 
-func makeCalibration(line string) calibaration {
-	var c = calibaration{}
+func makeCalibration(line string) calibration {
+	var c = calibration{}
 	chars := strings.SplitAfter(line, "")
 
-	for _, ch := range chars {
-		i, err := strconv.Atoi(ch)
+	for pos, ch := range chars {
+		num, err := strconv.Atoi(ch)
 
 		if err == nil {
-
 			if c.firstNumber == 0 {
-				c.firstNumber = i
-				c.secondNumber = i
+				c.firstNumber = num
+				c.secondNumber = num
 			} else {
-				c.secondNumber = i
+				c.secondNumber = num
+			}
+		} else {
+			num, err = findNumberString(line[pos:])
+			if err == nil {
+				if c.firstNumber == 0 {
+					c.firstNumber = num
+					c.secondNumber = num
+				} else {
+					c.secondNumber = num
+				}
 			}
 		}
 	}
@@ -51,15 +77,28 @@ func makeCalibration(line string) calibaration {
 }
 
 func main() {
-	data, err := readFile("input1.txt")
-	if err != nil {
-		fmt.Println(err)
+	args := os.Args[1:]
+
+	if len(args) < 1 {
+		fmt.Println("Missing input file")
 		return
 	}
 
+	var filename = args[0]
+
+	// Open the calibration document
+	file, err := os.Open(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
 	var result = 0
 
-	for _, line := range strings.Split(data, "\n") {
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+
 		if len(line) > 1 {
 			c := makeCalibration(line)
 			result += c.getNumber()
