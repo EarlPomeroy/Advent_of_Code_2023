@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Part One
 var limits = map[string]int{"red": 12, "green": 13, "blue": 14}
 
 func checkLimit(color string) bool {
@@ -33,6 +34,46 @@ func validGame(line string) (int, bool) {
 	return gameId, true
 }
 
+// Part two
+type game struct {
+	red   int
+	green int
+	blue  int
+}
+
+func (g *game) checkGame(color string) {
+	vals := strings.Split(color, " ")
+	c := vals[1]
+	num, _ := strconv.Atoi(vals[0])
+
+	if c == "red" && num > g.red {
+		g.red = num
+	} else if c == "green" && num > g.green {
+		g.green = num
+	} else if c == "blue" && num > g.blue {
+		g.blue = num
+	}
+}
+
+func (g *game) getValue() int {
+	return g.blue * g.red * g.green
+}
+
+func evaluateGame(line string) game {
+	gameStr := strings.Split(line, ":")
+	draws := strings.Split(gameStr[1], ";")
+
+	var g = game{}
+
+	for _, d := range draws {
+		for _, color := range strings.Split(d, ",") {
+			g.checkGame(strings.TrimSpace(color))
+		}
+	}
+
+	return g
+}
+
 func main() {
 	args := os.Args[1:]
 
@@ -50,20 +91,22 @@ func main() {
 	}
 	defer file.Close()
 
-	var result = []int{}
+	var result = []game{}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		id, valid := validGame(line)
-		if valid {
-			result = append(result, id)
-		}
+		// id, valid := validGame(line)
+		// if valid {
+		// 	result = append(result, id)
+		// }
+
+		result = append(result, evaluateGame(line))
 	}
 
 	var value = 0
-	for _, id := range result {
-		value += id
+	for _, game := range result {
+		value += game.getValue()
 	}
 
 	fmt.Println("Result: ", value)
