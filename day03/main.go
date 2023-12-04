@@ -33,6 +33,32 @@ func (s Symbol) isAdjacent(pn PartNumber) bool {
 	return false
 }
 
+func (s Symbol) isGear() bool {
+	return s.symbol == "*"
+}
+
+func (s Symbol) calculateRatio() int {
+	var pns []PartNumber
+
+	for _, pn := range partNumbers {
+		if s.isAdjacent(pn) {
+			pns = append(pns, pn)
+		}
+	}
+
+	var ratio = 0
+
+	if len(pns) > 1 {
+		ratio = 1
+
+		for _, pn := range pns {
+			ratio *= pn.getPartNumber()
+		}
+	}
+
+	return ratio
+}
+
 func (pn PartNumber) adjacent() bool {
 	for _, s := range symbols {
 		if s.isAdjacent(pn) {
@@ -99,8 +125,6 @@ func parseLine(line string, row int) {
 	}
 }
 
-// Part One
-
 // Part two
 
 func main() {
@@ -128,8 +152,8 @@ func main() {
 		parseLine(line, row)
 	}
 
+	// Part One
 	var result = 0
-
 	for _, pn := range partNumbers {
 		if pn.adjacent() {
 			result += pn.getPartNumber()
@@ -137,4 +161,15 @@ func main() {
 	}
 
 	fmt.Println("Result: ", result)
+
+	// Part Two
+	var gearRatio = 0
+
+	for _, s := range symbols {
+		if s.isGear() {
+			gearRatio += s.calculateRatio()
+		}
+	}
+
+	fmt.Println("Gear Ratio Total: ", gearRatio)
 }
