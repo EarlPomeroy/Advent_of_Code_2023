@@ -57,6 +57,23 @@ func readSeeds(line string) {
 	}
 }
 
+func readSeedPairs(line string) {
+	seeds := strings.TrimSpace(strings.Split(line, ":")[1])
+	seedPairs := strings.Split(seeds, " ")
+
+	for i := 0; i < len(seedPairs); i += 2 {
+		num, _ := strconv.Atoi(seedPairs[i])
+		seed := num
+
+		num, _ = strconv.Atoi(seedPairs[i+1])
+		count := num
+
+		for j := 0; j < count; j++ {
+			seedList = append(seedList, seed+j)
+		}
+	}
+}
+
 func processMap(lines []string) {
 	var m = Map{}
 	name := lines[0]
@@ -100,7 +117,8 @@ func processFile(file io.Reader) {
 		line := scanner.Text()
 
 		if !seedsRead {
-			readSeeds(line)
+			//readSeeds(line)
+			readSeedPairs(line)
 			seedsRead = true
 		} else {
 			if line == "" {
@@ -136,6 +154,7 @@ func main() {
 	processFile(file)
 
 	var location = math.MaxInt
+
 	for _, seed := range seedList {
 		val := firstMap.walkMaps(seed)
 
