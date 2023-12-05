@@ -12,6 +12,33 @@ type Card struct {
 	winningNumbers []int
 	cardNumbers    []int
 	points         int
+	matches        int
+}
+
+func (c *Card) calculateMatches() {
+	var matches = 0
+
+	for _, num := range c.cardNumbers {
+		if contains(c.winningNumbers, num) {
+			matches += 1
+		}
+	}
+
+	c.matches = matches
+}
+
+func getInstanceTotal(index int) {
+	val, ok := instances[index]
+	if ok {
+		instances[index] = val + 1
+	} else {
+		instances[index] = 1
+	}
+
+	for i := 1; i <= cards[index].matches; i++ {
+		getInstanceTotal(index + i)
+	}
+
 }
 
 func (c *Card) calculatePoints() {
@@ -70,6 +97,7 @@ func NewCard(line string) Card {
 }
 
 var cards []Card
+var instances = map[int]int{}
 
 func main() {
 	args := os.Args[1:]
@@ -92,14 +120,22 @@ func main() {
 		line := scanner.Text()
 		c := NewCard(line)
 		c.calculatePoints()
+		c.calculateMatches()
 		cards = append(cards, c)
 	}
 
 	var totalPoints = 0
+	var totalInstances = 0
 
-	for _, c := range cards {
+	for i, c := range cards {
 		totalPoints += c.points
+		getInstanceTotal(i)
+	}
+
+	for _, v := range instances {
+		totalInstances += v
 	}
 
 	fmt.Println("Total points: ", totalPoints)
+	fmt.Println("Total instances: ", totalInstances)
 }
