@@ -20,7 +20,8 @@ var cardValues = map[string]int{
 	"8": 8,
 	"9": 9,
 	"T": 10,
-	"J": 11,
+	// "J": 11, Jacks value is 11 for Part 1
+	"J": 1, // Joker value is 1 for Part 2
 	"Q": 12,
 	"K": 13,
 	"A": 14,
@@ -46,8 +47,13 @@ type HandList []Hand
 
 func (h *Hand) classify() {
 	handValue := map[rune]int{}
+	jokerCount := 0
 
 	for _, c := range h.Cards {
+		if string(c) == "J" {
+			jokerCount += 1
+		}
+
 		value, ok := handValue[c]
 
 		if ok {
@@ -60,20 +66,45 @@ func (h *Hand) classify() {
 	switch len(handValue) {
 	case 5:
 		h.Kind = high_card
+
+		if jokerCount == 1 {
+			h.Kind = one_pair
+		}
 	case 4:
 		h.Kind = one_pair
+
+		if jokerCount == 1 || jokerCount == 2 {
+			h.Kind = three_kind
+		}
 	case 3:
 		for _, value := range handValue {
 			if value == 2 {
 				h.Kind = two_pair
+
+				if jokerCount == 1 {
+					h.Kind = full_house
+				} else if jokerCount == 2 {
+					h.Kind = four_kind
+				}
+
 				break
 			}
 			if value == 3 {
 				h.Kind = three_kind
+
+				if jokerCount == 1 || jokerCount == 3 {
+					h.Kind = four_kind
+				}
+
 				break
 			}
 		}
 	case 2:
+		if jokerCount > 0 {
+			h.Kind = five_kind
+			break
+		}
+
 		for _, value := range handValue {
 			if value == 4 || value == 1 {
 				h.Kind = four_kind
