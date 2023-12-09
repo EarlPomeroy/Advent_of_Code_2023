@@ -48,6 +48,17 @@ func (h *History) extrapolate() int {
 	}
 }
 
+func (h *History) reverseExtrapolate() int {
+	for {
+		if h.base != nil {
+			num := h.base.reverseExtrapolate()
+			return h.sequence[0] - num
+		} else {
+			return 0
+		}
+	}
+}
+
 func (h History) print() {
 	fmt.Printf("%v\n\t", h.sequence)
 
@@ -99,7 +110,7 @@ func main() {
 	result := 0
 
 	for _, h := range HistoryList {
-		result += h.extrapolate()
+		result += h.reverseExtrapolate()
 		// h.print()
 	}
 
