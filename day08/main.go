@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strings"
 )
@@ -22,6 +23,7 @@ func (n Node) getNextNode(dir string) string {
 
 var directions = []string{}
 var maps = map[string]Node{}
+var startNode = []string{}
 
 func buildMap(line string) {
 	var key = strings.TrimSpace(strings.Split(line, "=")[0])
@@ -30,6 +32,10 @@ func buildMap(line string) {
 
 	left := strings.Split(values, ",")[0]
 	right := strings.Split(values, ",")[1]
+
+	if key[len(key)-1] == 'Z' {
+		startNode = append(startNode, key)
+	}
 
 	maps[key] = Node{Left: strings.TrimSpace(left), Right: strings.TrimSpace(right)}
 }
@@ -43,7 +49,7 @@ func solver(start string) int {
 		count += 1
 		mapNode = maps[mapNode].getNextNode(directions[instruction])
 
-		if mapNode == "ZZZ" {
+		if mapNode[len(mapNode)-1] == 'Z' {
 			break
 		} else {
 			instruction = (instruction + 1) % len(directions)
@@ -51,6 +57,20 @@ func solver(start string) int {
 	}
 
 	return count
+}
+
+func primeFactors(n int) []int {
+	var factors []int
+	for i := 2; i <= int(math.Sqrt(float64(n))); i++ {
+		for n%i == 0 {
+			factors = append(factors, i)
+			n /= i
+		}
+	}
+	if n > 1 {
+		factors = append(factors, n)
+	}
+	return factors
 }
 
 func main() {
@@ -83,6 +103,21 @@ func main() {
 	// fmt.Printf("%+v", directions)
 	// fmt.Printf("%+v", maps)
 
-	steps := solver("AAA")
-	println("Steps: ", steps)
+	resultMap := map[int]int{}
+
+	for _, start := range startNode {
+		steps := solver(start)
+		factors := primeFactors(steps)
+		for _, factor := range factors {
+			resultMap[factor] += 1
+		}
+	}
+
+	result := 1
+
+	for key := range resultMap {
+		result *= key
+	}
+
+	println("Steps: ", result)
 }
