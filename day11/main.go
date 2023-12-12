@@ -23,7 +23,7 @@ func (g *Galaxy) moveGalaxy() {
 			break
 		}
 
-		yCount += 1
+		yCount += 999999
 	}
 
 	for _, c := range cols {
@@ -31,7 +31,7 @@ func (g *Galaxy) moveGalaxy() {
 			break
 		}
 
-		xCount += 1
+		xCount += 999999
 	}
 
 	g.x += xCount
